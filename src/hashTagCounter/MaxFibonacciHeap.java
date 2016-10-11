@@ -22,8 +22,8 @@ import java.util.HashMap;
  */
 public class MaxFibonacciHeap<T extends Comparable<T>> {
 
-	private int size;	
-	private Node<T> minNode = null; //This is the root of this fibonacci heap
+	public int size;	
+	private Node<T> maxNode = null; //This is the root of this fibonacci heap
 	HashMap<T, Node<T>> elementLookupHashMap;
 	
 //-----------------------------------------------------------------//
@@ -65,13 +65,31 @@ public class MaxFibonacciHeap<T extends Comparable<T>> {
 	
 	public boolean insert(T data){
 		Node<T> newNode = new Node<T>(data);
-		//System.out.println ("Adding Node : " + data.toString());
+		if (maxNode == null){
+			newNode.setRightSibling(newNode);
+			newNode.setLeftSibling(newNode);
+			maxNode = newNode;
+		} else {
+			maxNode.getLeftSibling().setRightSibling(newNode);
+			newNode.setLeftSibling(maxNode.getLeftSibling());
+			maxNode.setLeftSibling(newNode);
+			newNode.setRightSibling(maxNode);
+		}
+		if (maxNode.compareTo(newNode) < 0){
+			maxNode = newNode;
+		}
 		elementLookupHashMap.put(data, newNode);
+		this.size++;
+		System.out.println ("Added Node : " + data.toString() + " size = " + this.size);
 		return true;
 	}
 	
 	public boolean contains(T data){
 		return (elementLookupHashMap.get(data) != null);
+	}
+	
+	public boolean isEmpty(){
+		return this.size == 0;
 	}
 	
 	public void increaseKey(T data){
@@ -86,15 +104,30 @@ public class MaxFibonacciHeap<T extends Comparable<T>> {
 		return null;
 	}
 	
-	public boolean isEmpty(){
-		return this.getSize() == 0;
+	/**
+	 * Takes 2 heapOrderedTrees and return a single new tree. 
+	 * Return the node of the merged tree.
+	 */
+	/*
+	private Node<T> meld(Node<T> N1, Node<T> N2){
+		
+		//Degree has to be equal - What do we return in this case?
+		//Ideally this should be the only time when this method should return null
+		if(N1.getDegree() != N2.getDegree()){
+			return null;
+		} else {
+			//Same degree - Just meld - Actually we should have ran with this assumption
+			//Merge the two circular linkedlists here. Pairwise combine later. 
+			//Also need to update the parent?
+		}
+		return null;
 	}
 	
+	/*
 	private void cascadeCut(){
 		
 	}
 	
-	private void meld(){
-		
-	}
+	
+	*/
 }

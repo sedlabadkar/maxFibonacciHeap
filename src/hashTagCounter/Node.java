@@ -21,6 +21,12 @@ class Node<T extends Comparable <T>> implements Comparable<Node<T>>{
 //-----------------------------------------------------------------//
 	public Node(T data) {
 		this.data = data;
+		this.child = null;
+		this.parent = null;
+		this.leftSibling = null;
+		this.rightSibling = null;
+		this.childCut = false;
+		this.degree = 0;
 	}
 //-----------------------------------------------------------------//
 //                                                                 //

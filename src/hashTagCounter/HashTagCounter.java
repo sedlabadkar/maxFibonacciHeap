@@ -59,7 +59,8 @@ public class HashTagCounter {
 					
 				} else {
 					//Number
-					int numHashTagsToOutput = Integer.parseInt(line.trim());
+					System.out.println(Integer.parseInt(line.trim()));
+					/*int numHashTagsToOutput = Integer.parseInt(line.trim());
 					HashTag[] tempHashTag = new HashTag[numHashTagsToOutput];
 					//Write to output file
 					for (int i = 0; i < numHashTagsToOutput; i++){
@@ -68,7 +69,7 @@ public class HashTagCounter {
 					}
 					for (int i = 0; i < numHashTagsToOutput; i++){
 						maxFH.insert(tempHashTag[i]);
-					}
+					}*/
 				}
 				line = br.readLine();
 			}
