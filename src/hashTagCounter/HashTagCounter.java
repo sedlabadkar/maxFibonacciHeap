@@ -56,6 +56,7 @@ public class HashTagCounter {
 						if(HTCLOGS)System.out.println("\n\nAdding: " + newHashTag.toString());
 						maxFH.insert(newHashTag);
 					}
+					//maxFH.printHeap();
 				} else if (line.toLowerCase().trim().equals("stop")){
 					//Stop
 					System.out.println("Got Stop. Exiting");
@@ -63,18 +64,19 @@ public class HashTagCounter {
 					
 				} else {
 					//Number
-					if (HTCLOGS) System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>               " +Integer.parseInt(line.trim()) + "                  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+					if (true) System.out.println("\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>               " +Integer.parseInt(line.trim()) + "                  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 					int numHashTagsToOutput = Integer.parseInt(line.trim());
 					HashTag[] tempHashTag = new HashTag[numHashTagsToOutput];
 					//Write to output file
 					for (int i = 0; i < numHashTagsToOutput; i++){
 						tempHashTag[i] = maxFH.removeMax();
-						if(true)System.out.print(tempHashTag[i].toString() + ",");
+						System.out.println("########################################################" + tempHashTag[i].toString() + ",");
+						//maxFH.printHeap();
 					}
-					System.out.println("");
 					for (int i = 0; i < numHashTagsToOutput; i++){
 						maxFH.insert(tempHashTag[i]);
 					}
+					System.out.println("");
 				}
 				line = br.readLine();
 			}
@@ -104,8 +106,8 @@ public class HashTagCounter {
 		
 		@Override
 		public String toString() {
-			//return "[HashTag=" + hashTag + ", Count=" + count + "]";
-			return hashTag;
+			return "[HashTag=" + hashTag + ", Count=" + count + "]";
+			//return hashTag;
 		}
 
 
@@ -127,7 +129,7 @@ public class HashTagCounter {
 		@Override
 		public int compareTo(HashTag h){
 			if (h == null) return 1;
-			return this.count - h.count;
+			return (this.count - h.count) != 0 ? (this.count - h.count): this.hashTag.length() - h.hashTag.length();
 		}
 	}
 }

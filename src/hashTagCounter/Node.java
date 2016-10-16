@@ -5,11 +5,11 @@ package hashTagCounter;
 
 /**
  * @author   Sachin Edlabadkar
- *  
+ *  TODO: Remove level
  */
 class Node<T extends Comparable <T>> implements Comparable<Node<T>>{
 
-	private int degree;
+	private int degree, level;
 	private Node<T> child, leftSibling, rightSibling, parent;
 	private boolean childCut;
 	private T data; 
@@ -27,6 +27,7 @@ class Node<T extends Comparable <T>> implements Comparable<Node<T>>{
 		this.rightSibling = this;
 		this.childCut = false;
 		this.degree = 0;
+		this.level = 0;
 	}
 //-----------------------------------------------------------------//
 //                                                                 //
@@ -40,6 +41,14 @@ class Node<T extends Comparable <T>> implements Comparable<Node<T>>{
 
 	public void setDegree(int degree) {
 		this.degree = degree;
+	}
+	
+	public int getLevel() {
+		return level;
+	}
+
+	public void setLevel(int level) {
+		this.level = level;
 	}
 
 	public Node<T> getChild() {
@@ -106,13 +115,14 @@ class Node<T extends Comparable <T>> implements Comparable<Node<T>>{
 	@Override
 	public String toString() {
 		StringBuilder toStr = new StringBuilder();
-		toStr.append("Node [degree= " + degree + ",\n");
+		toStr.append("[data= " + data + ",\n");
 		if (this.child != null) toStr.append("child=" + child.getData().toString() + ",\n");
 		if (this.leftSibling != null) toStr.append("leftSibling=" + leftSibling.getData().toString() + ",\n");
 		if (this.rightSibling != null) toStr.append("rightSibling=" + rightSibling.getData().toString() + ",\n");
 		if (this.parent != null) toStr.append("parent=" + parent.getData().toString() + ",\n");
-		toStr.append(" childcut=" + (childCut == true?"True":"False") + ",");
-		toStr.append(" data=" + data + "]");
+		toStr.append("childcut=" + (childCut == true?"True":"False") + ",\n");
+		toStr.append("degree =" + degree + ",\n");
+		toStr.append("level =" + level + "]");
 		
 		return toStr.toString();
 	}

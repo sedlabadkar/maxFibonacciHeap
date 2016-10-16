@@ -1,10 +1,12 @@
 package hashTagCounter;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  * @author   Sachin Edlabadkar
- *  
+ *  TODO: Need to check parent, left/right sibling, child, childCut and degree. Basically everything inside the node should be set properly
+ *  TODO: Make sure that it is
  */
 
 public class MaxFibonacciHeap<T extends Comparable<T>> {
@@ -42,16 +44,6 @@ public class MaxFibonacciHeap<T extends Comparable<T>> {
 //						Other Methods                              //                                     
 //  															   //
 //-----------------------------------------------------------------//
-	//Methods to implement
-	//1. Insert
-	//2. RemoveMin
-	//3. FindMin
-	//5. Size
-	//6. IsEmpty()
-	//7. Meld
-	//8. Arbitrary Remove
-	//9. IncreaseKey
-	
 	/**
 	* What could go wrong? When will this node return false? 
 	* FINAL: Shouldn't need anymore changes other than the above comment
@@ -91,77 +83,92 @@ public class MaxFibonacciHeap<T extends Comparable<T>> {
 	*
 	* FINAL Just check one more time the procedure for updatemax and pairwise combine
 	*/	
+	
+	/**
+	 * Steps:
+	 * 1. Detach the node
+	 * 2. Meld child Nodes to the top
+	 * 3. Pairwise combine
+	 * 4. Update Max
+	 * 5. return the max node
+	 * @param nodeToRemove
+	 * @return maxNode
+	 */
 	public T removeMax(){
-		Node<T> returnMaxNode = maxNode, childNode = maxNode.getChild(), tempNode, currNode;
-		HashMap<Integer, Node<T>> degreeList = new HashMap<Integer, Node<T>>();
-		tempNode = maxNode.getRightSibling();
-
-		//Detach subtree
-		maxNode.getLeftSibling().setRightSibling(tempNode);
-		tempNode.setLeftSibling(maxNode.getLeftSibling());
-		maxNode = null;
+		Node<T> secondList = null, nextNode, currNode, childNode, tempNode, sameDegreeNode, returnNode = maxNode;
+		HashMap<Integer, Node<T>> sameDegreeMap = new HashMap<Integer, Node<T>>();
+		//Detach the subtree from the top level circular list
+		//TODO: tempNode could be maxNode here
+		tempNode = returnNode.getRightSibling();
 		
-		//Max has been detached
-		this.size--;
-		elementLookupHashMap.remove(returnMaxNode.getData());
-		
+		returnNode.getLeftSibling().setRightSibling(tempNode);
+		tempNode.setLeftSibling(returnNode.getLeftSibling());
+		returnNode.setLeftSibling(returnNode);
+		returnNode.setRightSibling(returnNode);
+	
+		//Time to meld the child subtree to the top
+		childNode = maxNode.getChild();
+		returnNode.setChild(null);
+		returnNode.setDegree(0);
 		if (childNode != null){
 			childNode.setParent(null);
 			childNode.setChildCut(false);
 		}
+			
+		currNode = meld(tempNode, childNode);
 		
-		tempNode = meld(tempNode, childNode); //This could potentially be a subtree meld, so we need to look through all the
-		currNode = tempNode;
-		maxNode = currNode;
-		int i = 0;
-		 //elements to find the new max. Hence...
-		//updateMax & Pairwise combine
-		//TODO: Should we set childCut property to false here? For any or all nodes?
-		tempNode = currNode.getRightSibling();
-		while (tempNode != currNode){
-			Node<T> sameDegreeNode = degreeList.get(tempNode.getDegree());
-			i++;
-			if (HEAPLOGS){
-				System.out.println("----------------------------------------------" + i + " ------------------------------------------------------------------");
-				System.out.println("TempNode = " + tempNode.toString());
-				System.out.println("----------------------------------------------" + i + " ------------------------------------------------------------------");
-				System.out.println("CurrNode = " + currNode.toString());
-				System.out.println("----------------------------------------------" + i + " ------------------------------------------------------------------");
-				System.out.println("maxNode = " + maxNode.toString());
-				System.out.println("----------------------------------------------" + i + " ------------------------------------------------------------------");
+		//Node has been completely detached from the heap - Time to update heap variables 
+		this.size--;
+		this.elementLookupHashMap.remove(returnNode.getData());
+		
+		//At the point the heap is given by currNode. tempNode may point to the same node or it may not. We will use tempNode to
+		//traverse through the top level list in the heap and to do pairwise combine and update max process
+		
+		
+		/**
+		 * pairwise combine steps
+		 * 1. Extract the node - detach the subtree from the top level tree
+		 * 2. Check in the hashtable if another node has the same degree
+		 * 3. if no node is found, add to hashTable
+		 * 4. Else do combine for the two add this newly combined node to the hashTable
+		 * 5. Form a new circular linkedlist on the side - add this node here
+		 * 6. Repeat till all nodes have been traversed
+		 * 7. The newly formed circular linkedlist should be the complete heap. I think. Fingers crossed
+		 */
+		
+		//It is possible that there is only one node in the top level list, and that temp node now points to itself/currNode
+		//This also means that there aren't any nodes to do pairwise combine - yay
+		nextNode = currNode.getRightSibling();
+		
+		while (nextNode != currNode){
+			sameDegreeNode = sameDegreeMap.get(tempNode.getDegree());
+			//1. Extract the node - detach the subtree from the top level tree 
+			tempNode = nextNode;
+			nextNode = tempNode.getRightSibling();
+			tempNode.getLeftSibling().setRightSibling(nextNode);
+			nextNode.setLeftSibling(tempNode);
+			tempNode.setLeftSibling(tempNode);
+			tempNode.setRightSibling(tempNode);
+			if (tempNode.getParent() != null){
+				if (HEAPLOGS)System.out.println("looks like we are not in the top level anymore");
 			}
-			if (maxNode.compareTo(tempNode) < 0) {
-				maxNode = tempNode;
-			}
+			
+			//2. Check in the hashtable if another node has the same degree
 			if (sameDegreeNode == null){
-				if (HEAPLOGS) System.out.println("Added to hashTable\n\n");
-				degreeList.put(tempNode.getDegree(), tempNode);
+				//3. if no node is found, add to hashTable
+				sameDegreeMap.put(tempNode.getDegree(), tempNode);
 			} else {
-				if (HEAPLOGS) {
-					System.out.println("sameDegreeNode = " + sameDegreeNode.toString() + "Degree = " + tempNode.getDegree());
-					System.out.println("----------------------------------------------" + i + " ------------------------------------------------------------------");
-				}
-				degreeList.remove(tempNode.getDegree()); //Since a match has been found, we will combine them and put them back in the degreeList at new place
+				//Detach samedegreeNode subtree
+				Node<T> sameDegreeDetachTempNode = sameDegreeNode.getRightSibling();
+				//4. Else do combine for the two add this newly combined node to the hashTable
 				tempNode = combine(tempNode, sameDegreeNode);
-				continue;
+				sameDegreeMap.put(tempNode.getDegree(), tempNode);
 			}
-			tempNode = tempNode.getRightSibling();
-		}
-		//Reset the current Max node - Maybe a separate function for this. Depends on how repetitive this code is
-		returnMaxNode.setParent(null);
-		returnMaxNode.setRightSibling(returnMaxNode);
-		returnMaxNode.setLeftSibling(returnMaxNode);
-		returnMaxNode.setChild(null);
-		returnMaxNode.setChildCut(false);
-		returnMaxNode.setDegree(0);
-		
-		if(HEAPLOGS){
-			System.out.println ("\nRemoved Node : " + returnMaxNode.toString() + " size = " + this.size + "\n\n");
-			System.out.println ("\nNew MaxNode = " + maxNode.toString() + "\n\n");
-			System.out.println("RemoveMAx End");
+			//5. Form a new circular linkedlist on the side - add this node here
+			secondList = meld(secondList, tempNode);
 		}
 		
-		return returnMaxNode.getData();
+		return returnNode.getData();
 	}
 	
 	/**
@@ -171,7 +178,7 @@ public class MaxFibonacciHeap<T extends Comparable<T>> {
 		return (elementLookupHashMap.get(data)!= null? elementLookupHashMap.get(data).getData():null);
 	}
 	
-	/**
+		/**
 	* Its really difficult to describe this method because of its complicated nature
 	* Might come in handy. 
 	*/
@@ -235,6 +242,7 @@ public class MaxFibonacciHeap<T extends Comparable<T>> {
 		return true;
 	}
 	
+
 	public T remove(Node<T> nodeToRemove){
 		return null;
 	}
@@ -312,6 +320,7 @@ public class MaxFibonacciHeap<T extends Comparable<T>> {
 				N1.getParent().setDegree(N1.getParent().getDegree() - 1);
 			}
 			N1.setParent(N2);
+			N1.setLevel(N2.getLevel() + 1);
 			//Detach the node and meld into the child node of parent
 			//if (N2.getChild() == null){
 				Node<T> tempNode = N1.getRightSibling();
@@ -337,6 +346,7 @@ public class MaxFibonacciHeap<T extends Comparable<T>> {
 				N2.getParent().setDegree(N2.getParent().getDegree() - 1);
 			}
 			N2.setParent(N1);
+			N2.setLevel(N1.getLevel() + 1);
 			//if (N1.getChild() == null){
 				Node<T> tempNode = N2.getRightSibling();
 				N2.getLeftSibling().setRightSibling(tempNode);
@@ -387,4 +397,100 @@ public class MaxFibonacciHeap<T extends Comparable<T>> {
 			return;
 		}
 	}
+	
+	/**
+	 * This is a function to print the Heap, it doesn't really serve any purpose in the working of the DS
+	 * But it makes debugging a lot easier as it allows to see the heap after each operation.
+	 * We are following a simple DFS strategy, preorder, to print the values. Following is the strategy:
+	 * push circular linkedlist on stack --> pop out --> print --> push child list on stack --> do till stack is empty
+	 */
+	public void printHeap(){
+		LinkedList<Node<T>> printStack = new LinkedList<Node<T>>();
+		Node<T> tempNode, currNode, anchorNode;
+		currNode = maxNode;
+		anchorNode  = currNode;
+		tempNode = anchorNode.getRightSibling();
+		while (tempNode != anchorNode){
+			printStack.push(tempNode);
+			tempNode = tempNode.getRightSibling();
+		}
+		printStack.push(maxNode);
+		if(HEAPLOGS)System.out.println("\n\n-->");
+		while (printStack.size() != 0){
+			currNode = printStack.pop();
+			//Print this
+			if(HEAPLOGS)System.out.println("\n" + currNode.toString());
+			//Add its children to the stack
+			anchorNode = currNode.getChild();
+			if (anchorNode != null){
+				tempNode = anchorNode.getRightSibling();
+				printStack.push(anchorNode);
+				while (tempNode != anchorNode){
+					printStack.push(tempNode);
+					tempNode = tempNode.getRightSibling();
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Method to detach a subtree from the given circular linked list
+	 * NOTE: May change the child cut property. This method will not change it
+	 * @param listNode : next Node in the list
+	 * @param nodeToDetach
+	 * @return
+	 */
+	private boolean detachSubtree(Node<T> nodeToDetach, Node<T> listNode){
+		Node<T> parentNode;
+		parentNode = nodeToDetach.getParent();
+		if (listNode.equals(nodeToDetach)){
+			//There is only one node in the list, removing it is not possible
+			return false;
+		}
+		
+		nodeToDetach.getLeftSibling().setRightSibling(listNode);
+		listNode.setLeftSibling(nodeToDetach.getLeftSibling());
+		nodeToDetach.setLeftSibling(nodeToDetach);
+		nodeToDetach.setRightSibling(nodeToDetach);
+		
+		if(parentNode != null){
+			parentNode.setDegree(parentNode.getDegree() - 1);
+			parentNode.setChild(listNode);
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * 
+	 * @param nodeToDetach
+	 * @param listNode : nextNode in the list
+	 * @return
+	 */
+	private boolean detachNode(Node<T> nodeToDetach, Node<T> listNode){
+		Node<T> childNode, parentNode, tempNode;
+		if (detachSubtree(nodeToDetach, listNode)){
+			childNode = nodeToDetach.getChild();
+			parentNode = listNode.getParent();
+			if (childNode != null) {
+				nodeToDetach.setChild(null);
+				//Parent Nodes of all child nodes need to be changed
+				childNode.setParent(parentNode);
+				tempNode = childNode.getRightSibling();
+				while(tempNode != childNode){
+					tempNode.setParent(parentNode);
+					tempNode = tempNode.getRightSibling();
+				}
+				listNode = meld(listNode, childNode);
+				if (parentNode != null){
+					parentNode.setDegree(parentNode.getDegree() + nodeToDetach.getDegree());
+				}
+			} //else there is no subtree to detach from
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+
 }
