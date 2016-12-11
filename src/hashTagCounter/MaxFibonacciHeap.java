@@ -189,7 +189,7 @@ public class MaxFibonacciHeap<T extends Comparable<T>> {
 			T2.setRightSibling(N1);
 			N1.setLeftSibling(T2);
 
-			return N1;	
+			return N1.compareTo(N2) > 0? N1 : N2;	
 		}
     }
 
